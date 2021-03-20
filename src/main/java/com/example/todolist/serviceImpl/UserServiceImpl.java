@@ -1,7 +1,12 @@
 package com.example.todolist.serviceImpl;
 
-import com.example.todolist.exceptions.AuthException;
+import java.util.Date;
+import java.util.Optional;
+
+import com.example.todolist.exceptions.Exception;
+import com.example.todolist.model.Audit;
 import com.example.todolist.model.User;
+import com.example.todolist.repository.AuditRepository;
 import com.example.todolist.repository.UserRepository;
 import com.example.todolist.service.UserService;
 
@@ -15,48 +20,61 @@ public class UserServiceImpl implements UserService {
     @Autowired
     UserRepository userRepository;
 
-    // @Autowired
-    // AuditRepository auditRepository;
+    @Autowired
+    AuditRepository auditRepository;
     
     @Override
-    public User validateUser(String username, String password) throws AuthException {
+    public User validateUser(String username, String password) throws Exception {
         if(username != null)
             username.toLowerCase();
         try{
-            User user = userRepository.findByUsername(username);
-            if(user == null)
-                throw new AuthException("Invalid username.");
-            if(!BCrypt.checkpw(password, user.getPassword()))
-                throw new AuthException("Invalid password.");
+            Optional<User> user = userRepository.findByUsername(username);
+            if(user.isEmpty())
+                throw new Exception("Invalid username.");
+            
+            if(!BCrypt.checkpw(password, user.get().getPassword()))
+                throw new Exception("Invalid password.");
             
             //Registering user login
-            //Integer audit = auditRepository.create(username, null, new Date(), "User logged in");
-            return user;
+            int audit_id = auditRepository.getAuditId();
+            Audit audit = new Audit(audit_id, user.get(), null, "User logged in", new Date());
+            auditRepository.save(audit);
+
+            return user.get();
         } catch (Exception e){
 
         }
         return null;
     }
-
+    
     @Override
-    public User registerUser(String username, String password, String first_name, String last_name)
-            throws AuthException {
+    public User registerUser(User user)
+            throws Exception {
         //Setting username to lowercase
-        if(username != null) 
-            username.toLowerCase();
+        if(user.getUsername() != null) 
+            user.setUsername(user.getUsername().toLowerCase());
         
         //Verifying user existence
-        User user = userRepository.findByUsername(username);
-        if(user != null){
-            throw new AuthException("Failed to create user. Username already exists.");
+        Optional<User> verified_user = userRepository.findByUsername(user.getUsername());
+        if(verified_user.isPresent()){
+            throw new Exception("Failed to create user. Username already exists.");
         }
         
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
-        int id = userRepository.getUserId();
+        // Encrypting password
+        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(10));
+        user.setPassword(hashedPassword);
+
+        // Generating user_id
+        int user_id = userRepository.getUserId();
+        user.setUser_id(user_id);
+
         //Creating user
-        User new_user =  userRepository.save(new User(id, username, hashedPassword, first_name, last_name));
+        User new_user =  userRepository.save(user);
+
         //Registering user creation
-        //Integer audit = auditRepository.create(username, null, new Date(), "User creation");
+        int audit_id = auditRepository.getAuditId();
+        Audit audit = new Audit(audit_id, new_user, null, "User created.", new Date());
+        auditRepository.save(audit);
         
         return new_user;
     }

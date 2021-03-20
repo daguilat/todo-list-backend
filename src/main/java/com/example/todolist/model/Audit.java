@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -17,9 +18,11 @@ public class Audit {
     private int audit_id;
 
     @ManyToOne(optional = false)
+    @JoinColumn(name="user_id")
     private User user;
 
     @ManyToOne(optional = true)
+    @JoinColumn(name="task_id")
     private Task task;
 
     @Column(name = "activity")

@@ -3,6 +3,7 @@ package com.example.todolist.model;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -20,7 +21,8 @@ public class Task {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @ManyToOne(optional = false)
+    @ManyToOne
+    @JoinColumn(name="user_id")
     private User user;
 
     @Column(name = "state", nullable = false)
