@@ -14,7 +14,7 @@ import javax.persistence.Table;
 public class Audit {
     
     @Id
-    @Column(name = "audt_id", nullable = false)
+    @Column(name = "audit_id", nullable = false)
     private int audit_id;
 
     @ManyToOne(optional = false)

@@ -1,13 +1,12 @@
 package com.example.todolist.serviceImpl;
 
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
-import com.example.todolist.exceptions.Exception;
-import com.example.todolist.model.Audit;
 import com.example.todolist.model.User;
-import com.example.todolist.repository.AuditRepository;
 import com.example.todolist.repository.UserRepository;
+import com.example.todolist.service.AuditService;
 import com.example.todolist.service.UserService;
 
 import org.mindrot.jbcrypt.BCrypt;
@@ -21,35 +20,68 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
 
     @Autowired
-    AuditRepository auditRepository;
-    
+    AuditService auditService;
+
+
     @Override
-    public User validateUser(String username, String password) throws Exception {
-        if(username != null)
-            username.toLowerCase();
-        try{
-            Optional<User> user = userRepository.findByUsername(username);
-            if(user.isEmpty())
-                throw new Exception("Invalid username.");
-            
-            if(!BCrypt.checkpw(password, user.get().getPassword()))
-                throw new Exception("Invalid password.");
-            
-            //Registering user login
-            int audit_id = auditRepository.getAuditId();
-            Audit audit = new Audit(audit_id, user.get(), null, "User logged in", new Date());
-            auditRepository.save(audit);
-
-            return user.get();
-        } catch (Exception e){
-
-        }
-        return null;
+    public User getUserByUsername(String username){
+        Optional<User> user = userRepository.findByUsername(username);
+        if(!user.isPresent())
+            return null;
+        
+        return user.get();
     }
     
     @Override
-    public User registerUser(User user)
-            throws Exception {
+    public Map<String, String> validateUser(String username, String password){      
+        Map<String, String> result = new HashMap<>();  
+        if(username.equals("") || username == null){
+            result.put("status", "400");
+            result.put("message", "No username given");
+            return result;
+        }
+        if(password.equals("") || password == null){
+            result.put("status", "400");
+            result.put("message", "No password given");
+            return result;
+        }
+        
+        username.toLowerCase();    
+        Optional<User> user = userRepository.findByUsername(username);
+        if(!user.isPresent()){
+            result.put("status", "400");
+            result.put("message", "Invalid username.");
+            return result;
+        }
+        
+        if(!BCrypt.checkpw(password, user.get().getPassword())){
+            result.put("status", "400");
+            result.put("message", "Invalid password.");
+            return result;
+        }
+        
+        //Registering user login
+        auditService.saveAudit(user.get(), null, "User logged in");
+        
+        result.put("status", "200");
+        result.put("message", "OK");
+        return result;
+    }
+    
+    @Override
+    public Map<String, String> registerUser(User user){     
+        Map<String, String> result = new HashMap<>();  
+        if(user.getUsername() == null){
+            result.put("status", "400");
+            result.put("message", "No username given");
+            return result;
+        }
+        if(user.getPassword() == null){
+            result.put("status", "400");
+            result.put("message", "No password given");
+            return result;
+        } 
+
         //Setting username to lowercase
         if(user.getUsername() != null) 
             user.setUsername(user.getUsername().toLowerCase());
@@ -57,7 +89,10 @@ public class UserServiceImpl implements UserService {
         //Verifying user existence
         Optional<User> verified_user = userRepository.findByUsername(user.getUsername());
         if(verified_user.isPresent()){
-            throw new Exception("Failed to create user. Username already exists.");
+            result.put("status", "400");
+            result.put("message", "Failed to create user. Username already exists.");
+            return result;
+
         }
         
         // Encrypting password
@@ -72,11 +107,10 @@ public class UserServiceImpl implements UserService {
         User new_user =  userRepository.save(user);
 
         //Registering user creation
-        int audit_id = auditRepository.getAuditId();
-        Audit audit = new Audit(audit_id, new_user, null, "User created.", new Date());
-        auditRepository.save(audit);
+        auditService.saveAudit(new_user, null, "User created.");
         
-        return new_user;
+        result.put("status", "200");
+        return result;
     }
     
 }

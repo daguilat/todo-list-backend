@@ -1,11 +1,14 @@
 package com.example.todolist.service;
 
-import com.example.todolist.exceptions.Exception;
+import java.util.Map;
+
 import com.example.todolist.model.User;
 
 public interface UserService {
     
-    public User validateUser(String username, String password) throws Exception;
+    public User getUserByUsername(String username);
 
-    public User registerUser(User user) throws Exception;
+    public Map<String, String> validateUser(String username, String password);
+
+    public Map<String, String> registerUser(User user);
 }

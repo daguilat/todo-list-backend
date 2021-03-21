@@ -2,7 +2,6 @@ package com.example.todolist.repository;
 
 import java.util.Optional;
 
-import com.example.todolist.exceptions.Exception;
 import com.example.todolist.model.User;
 
 import org.springframework.data.jpa.repository.Query;
@@ -16,10 +15,10 @@ public interface UserRepository extends CrudRepository<User, Integer> {
     int getUserId(); 
 
     @Query(value = "SELECT user_id, username, first_name, last_name, password FROM users WHERE username = ?1 AND password = ?2", nativeQuery = true)
-    Optional<User> findByUsernameAndPassword(String username, String password) throws Exception;
+    Optional<User> findByUsernameAndPassword(String username, String password);
 
     @Query(value = "SELECT user_id, username, first_name, last_name, password FROM users WHERE username = ?1", nativeQuery = true)
-    Optional<User> findByUsername(String username) throws Exception;
+    Optional<User> findByUsername(String username);
 
     /* RETURN RANDOM USER BETWEEN THE ONES WITH THE LESS NUMBER OF TASKS
         SELECT *
