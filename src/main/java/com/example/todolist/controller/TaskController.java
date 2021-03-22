@@ -26,25 +26,43 @@ public class TaskController {
     @Autowired
     TaskService taskService;
 
+    //Controller to get list of all tasks
+    //Input: the user that is getting the list for audit purposes
+    //Output: list of tasks
     @GetMapping("/list/{user_id}")
     public ResponseEntity<List<Task>> getAllTask(HttpServletRequest httpServletRequest,
-                                                 @PathVariable int user_id) throws Exception {
+                                                 @PathVariable int user_id){
         return new ResponseEntity<List<Task>>(taskService.getAllTask(user_id), HttpStatus.OK);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Task> createTask(HttpServletRequest httpSevletRequest, @RequestBody Task task) throws Exception {
-        return new ResponseEntity<Task>(taskService.createTask(task), HttpStatus.OK);
+    //Controller to create a task
+    //Input: the user that is creating the task and the task data to create
+    //Output: created task
+    @PostMapping("/create/{user_id}")
+    public ResponseEntity<Task> createTask(HttpServletRequest httpSevletRequest,
+                                           @PathVariable int user_id, 
+                                           @RequestBody Task task){
+        return new ResponseEntity<Task>(taskService.createTask(task, user_id), HttpStatus.OK);
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<Task> updateTask(HttpServletRequest httpSevletRequest, @RequestBody Task task) throws Exception {
-        return new ResponseEntity<Task>(taskService.updateTask(task), HttpStatus.OK);
+    //Controller to update a task
+    //Input: the user that is updating the task and the task data to update
+    //Output: updated task
+    @PutMapping("/update/{user_id}")
+    public ResponseEntity<Task> updateTask(HttpServletRequest httpSevletRequest,
+                                           @PathVariable int user_id,
+                                           @RequestBody Task task){
+        return new ResponseEntity<Task>(taskService.updateTask(task, user_id), HttpStatus.OK);
     }
     
-    @DeleteMapping("/delete/{task_id}")
-    public ResponseEntity<String> deleteTask(HttpServletRequest httpSevletRequest, @PathVariable int task_id) throws Exception {
-        taskService.deleteTask(task_id);
+    //Controller to delete a task
+    //Input: the user that is deleting the task and the task id to delete
+    //Output: the response 
+    @DeleteMapping("/delete/{task_id}/{user_id}")
+    public ResponseEntity<String> deleteTask(HttpServletRequest httpSevletRequest,
+                                             @PathVariable int user_id, 
+                                             @PathVariable int task_id){
+        taskService.deleteTask(task_id, user_id);
         return new ResponseEntity<String>("Task deleted correctly", HttpStatus.OK);
     }
 }

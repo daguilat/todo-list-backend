@@ -28,6 +28,9 @@ public class UserController{
     @Autowired
     UserService userService;
 
+    //Controller for users to login
+    //Input: the user data
+    //Output: if the user logged in correctly it returns the bearer token, if not, an error message
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> loginUser(@RequestBody User user){
         Map<String, String> result = userService.validateUser(user.getUsername(), user.getPassword());
@@ -38,12 +41,18 @@ public class UserController{
         return new ResponseEntity<>(generateJWTTToken(validated_user), HttpStatus.OK);
     }
 
+    //Controller for users to register
+    //Input: the user data
+    //Output: if the user registered correctly it returns the bearer token, if not, an error message
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> registerUser(@RequestBody User user){ 
         userService.registerUser(user);
         return new ResponseEntity<>(generateJWTTToken(user), HttpStatus.OK);
     }
 
+    //Method to generate the bearer token for logged or registered users
+    //Input: the user data
+    //Output: the bearer token
     public Map<String,String> generateJWTTToken(User user){
         long timestamp = System.currentTimeMillis();
         String token = Jwts.builder().signWith(SignatureAlgorithm.HS256, Constants.API_SECRET_KEY)
@@ -56,6 +65,7 @@ public class UserController{
         Map<String, String> map = new HashMap<>();
         map.put("status", "200");
         map.put("token", token);
+        map.put("user_id", String.valueOf(user.getUser_id()));
         return map;
     }
 }

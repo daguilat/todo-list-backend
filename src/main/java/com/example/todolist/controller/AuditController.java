@@ -19,6 +19,8 @@ public class AuditController {
     @Autowired
     AuditService auditService;
 
+    //Controller to get all audit information
+    //Output: List of audit
     @GetMapping("/list")
     public ResponseEntity<List<Audit>> getAllAudit(){
         return new ResponseEntity<List<Audit>>(auditService.getAllAudit(), HttpStatus.OK);

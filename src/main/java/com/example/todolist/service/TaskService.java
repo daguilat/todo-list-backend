@@ -6,11 +6,11 @@ import com.example.todolist.model.Task;
 
 public interface TaskService {
     
-    List<Task> getAllTask(int user_id) throws Exception;
+    List<Task> getAllTask(int user_id);
 
-    Task createTask(Task task) throws Exception;
+    Task createTask(Task task, int user_id);
 
-    Task updateTask(Task task) throws Exception;
+    Task updateTask(Task task, int user_id);
 
-    void deleteTask(int task_id) throws Exception;
+    void deleteTask(int task_id, int user_id);
 }

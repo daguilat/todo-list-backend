@@ -27,7 +27,7 @@ public class TaskServiceImpl implements TaskService {
     AuditService auditService;
 
     @Override
-    public List<Task> getAllTask(int user_id) throws Exception {
+    public List<Task> getAllTask(int user_id) {
         Optional<User> user = userRepository.findById(user_id);
         if(user.isPresent()){
             //Registering user activity: finding all tasks
@@ -39,8 +39,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Task createTask(Task task) throws Exception {
-        //Getting user
+    public Task createTask(Task task, int user_id) {
+        //Validating user
         Optional<User> user = userRepository.findByUsername(task.getUser().getUsername());
         if(user.isPresent()){
             task.setUser(user.get());
@@ -50,6 +50,8 @@ public class TaskServiceImpl implements TaskService {
             Optional<User> randomUser = userRepository.findRandomLessTasksUser();
             if(randomUser.isPresent()){
                 user = randomUser;
+            } else {
+                //Failed to assign random user to task
             }
         }
         // Getting new task id
@@ -59,39 +61,42 @@ public class TaskServiceImpl implements TaskService {
         task = taskRepository.save(task);
 
         //Registering user activity: creating tasks
-        auditService.saveAudit(user.get(), null, "User created new task of id: "+task_id);
+        Optional<User> user_creator = userRepository.findById(user_id);
+        auditService.saveAudit(user_creator.get(), null, "User created new task of id: "+task_id);
 
         return task;
     }
 
     @Override
-    public Task updateTask(Task task) throws Exception {
+    public Task updateTask(Task task, int user_id) {
         //Getting user
         Optional<User> user = userRepository.findByUsername(task.getUser().getUsername());
-        if(user.isPresent()){
-            taskRepository.save(task);
-            //Registering user activity: updating tasks
-            auditService.saveAudit(user.get(), null, "User updated task of id: "+task.getTask_id());
+        if(!user.isPresent()){
+            //Selected user was not found
+        }
 
-            return task;
-        } else 
-            throw new Exception("No user was found.");
+        taskRepository.save(task);
+        //Registering user activity: updating tasks
+        Optional<User> user_updater = userRepository.findById(user_id);
+        auditService.saveAudit(user_updater.get(), null, "User updated task of id: "+task.getTask_id());
+
+        return task;
     }
 
     @Override
-    public void deleteTask(int task_id) throws Exception {
+    public void deleteTask(int task_id, int user_id) {
         // Getting task
         Optional<Task> task = taskRepository.findById(task_id);
         if(!task.isPresent())
-            throw new Exception("Task not found. Task ID: " + task_id);
+            //Task not found
         
         // Deleting task
         taskRepository.delete(task.get());
 
         //Registering user activity: deleting tasks
+        Optional<User> user_deleter = userRepository.findById(user_id);
+        auditService.saveAudit(user_deleter.get(), null, "User deleted task of id: "+task.get().getTask_id());
        
-
-
     }
     
 }
