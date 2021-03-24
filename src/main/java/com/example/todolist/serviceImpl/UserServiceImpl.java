@@ -1,6 +1,8 @@
 package com.example.todolist.serviceImpl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -22,6 +24,12 @@ public class UserServiceImpl implements UserService {
     @Autowired
     AuditService auditService;
 
+    @Override
+    public List<User> getAllUser() {
+        List<User> list = new ArrayList<>();
+		userRepository.findAll().forEach(e -> list.add(e));
+		return list;
+    }
 
     @Override
     public User getUserByUsername(String username){
@@ -100,7 +108,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(hashedPassword);
 
         // Generating user_id
-        int user_id = userRepository.getUserId();
+        Integer user_id = userRepository.getUserId();
         user.setUser_id(user_id);
 
         //Creating user

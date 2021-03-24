@@ -22,13 +22,13 @@ public class AuditServiceImpl implements AuditService {
     @Override
     public List<Audit> getAllAudit() {
 		List<Audit> list = new ArrayList<>();
-		auditRepository.findAll().forEach(e -> list.add(e));
+		auditRepository.getAllAudit().forEach(e -> list.add(e));
 		return list;
     }
 
     @Override
     public Audit saveAudit(User user, Task task, String activity) {
-      int audit_id = auditRepository.getAuditId();
+      Integer audit_id = auditRepository.getAuditId();
       Audit audit = new Audit(audit_id, user, task, activity, new Date());
       auditRepository.save(audit);
       return auditRepository.save(audit);

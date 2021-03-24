@@ -15,7 +15,7 @@ public class Audit {
     
     @Id
     @Column(name = "audit_id", nullable = false)
-    private int audit_id;
+    private Integer audit_id;
 
     @ManyToOne(optional = false)
     @JoinColumn(name="user_id")
@@ -31,9 +31,10 @@ public class Audit {
     @Column(name = "date")
     private Date date;
 
+    //BUILDERS 
     public Audit() {}
 
-    public Audit(int audit_id, User user, Task task, String activity, Date date){
+    public Audit(Integer audit_id, User user, Task task, String activity, Date date){
         this.audit_id = audit_id;
         this.user = user;
         this.task = task;
@@ -41,11 +42,12 @@ public class Audit {
         this.date = date;
     }
 
-    public int getAudit_id() {
+    //GETTER AND SETTER
+    public Integer getAudit_id() {
         return audit_id;
     }
 
-    public void setAudit_id(int audit_id) {
+    public void setAudit_id(Integer audit_id) {
         this.audit_id = audit_id;
     }
 

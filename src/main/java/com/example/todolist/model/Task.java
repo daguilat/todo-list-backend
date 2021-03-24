@@ -13,7 +13,7 @@ public class Task {
 
     @Id
     @Column(name = "task_id", nullable = false)
-    private int task_id;
+    private Integer task_id;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -30,7 +30,7 @@ public class Task {
 
     public Task() {}
 
-    public Task(int task_id, String title, String description, User user, String state){
+    public Task(Integer task_id, String title, String description, User user, String state){
         this.task_id = task_id;
         this.title = title;
         this.description = description;
@@ -38,11 +38,11 @@ public class Task {
         this.state = state;
     }
 
-    public int getTask_id() {
+    public Integer getTask_id() {
         return task_id;
     }
 
-    public void setTask_id(int task_id) {
+    public void setTask_id(Integer task_id) {
         this.task_id = task_id;
     }
 

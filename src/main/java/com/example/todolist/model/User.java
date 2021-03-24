@@ -14,7 +14,7 @@ public class User implements Serializable {
 
     @Id
     @Column(name = "user_id", nullable = false)
-    private int user_id;
+    private Integer user_id;
 
     @Column(name = "username", nullable = false)
     private String username;
@@ -30,7 +30,7 @@ public class User implements Serializable {
 
     public User(){}
 
-    public User(int user_id, String username, String password, String first_name, String last_name){
+    public User(Integer user_id, String username, String password, String first_name, String last_name){
         this.user_id = user_id;
         this.username = username;
         this.password = password;
@@ -38,11 +38,11 @@ public class User implements Serializable {
         this.last_name = last_name;
     }
 
-    public int getUser_id() {
+    public Integer getUser_id() {
         return user_id;
     }
 
-    public void setUser_id(int user_id) {
+    public void setUser_id(Integer user_id) {
         this.user_id = user_id;
     }
 

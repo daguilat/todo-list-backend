@@ -2,7 +2,10 @@ package com.example.todolist.controller;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.example.todolist.Constants;
 import com.example.todolist.model.User;
@@ -12,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +31,11 @@ public class UserController{
 
     @Autowired
     UserService userService;
+
+    @GetMapping("/list")
+    public ResponseEntity<List<User>> getAllUser(HttpServletRequest httpServletRequest){
+        return new ResponseEntity<List<User>>(userService.getAllUser(), HttpStatus.OK);
+    }
 
     //Controller for users to login
     //Input: the user data

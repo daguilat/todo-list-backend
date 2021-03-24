@@ -1,7 +1,9 @@
 package com.example.todolist.serviceImpl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.example.todolist.model.Task;
@@ -27,19 +29,14 @@ public class TaskServiceImpl implements TaskService {
     AuditService auditService;
 
     @Override
-    public List<Task> getAllTask(int user_id) {
-        Optional<User> user = userRepository.findById(user_id);
-        if(user.isPresent()){
-            //Registering user activity: finding all tasks
-            auditService.saveAudit(user.get(), null, "User getting all tasks");
-        }
+    public List<Task> getAllTask() {
         List<Task> list = new ArrayList<>();
-		taskRepository.findAll().forEach(e -> list.add(e));
+		taskRepository.getAllTasks().forEach(e -> list.add(e));
 		return list;
     }
 
     @Override
-    public Task createTask(Task task, int user_id) {
+    public Task saveTask(Task task, Integer user_id) {
         //Validating user
         Optional<User> user = userRepository.findByUsername(task.getUser().getUsername());
         if(user.isPresent()){
@@ -47,48 +44,52 @@ public class TaskServiceImpl implements TaskService {
         }
         //If no username was send, getting random user with less tasks
         else {
-            Optional<User> randomUser = userRepository.findRandomLessTasksUser();
-            if(randomUser.isPresent()){
-                user = randomUser;
+            Optional<User> randomUserWithoutTasks = userRepository.findRandomUserWithoutTasks();
+            if(randomUserWithoutTasks.isPresent()){
+                user = randomUserWithoutTasks;
+                task.setUser(randomUserWithoutTasks.get());
             } else {
-                //Failed to assign random user to task
+                Optional<User> randomUserWithLessAmountOfTasks = userRepository.findRandomUserWithoutLessAmountOfTasks();
+                if(randomUserWithLessAmountOfTasks.isPresent()){
+                    user = randomUserWithLessAmountOfTasks;
+                    task.setUser(randomUserWithLessAmountOfTasks.get());
+                }
             }
         }
-        // Getting new task id
-        int task_id = taskRepository.getTaskId();
-        task.setTask_id(task_id);
-        
-        task = taskRepository.save(task);
 
-        //Registering user activity: creating tasks
-        Optional<User> user_creator = userRepository.findById(user_id);
-        auditService.saveAudit(user_creator.get(), null, "User created new task of id: "+task_id);
+        if(task.getTask_id() == null){
+            // Getting new task id
+            int task_id = taskRepository.getTaskId();
+            task.setTask_id(task_id);
+            
+            task = taskRepository.save(task);
+    
+            //Registering user activity: creating tasks
+            Optional<User> user_creator = userRepository.findById(user_id);
+            auditService.saveAudit(user_creator.get(), null, "User created task of id: "+task_id);
 
-        return task;
-    }
+        } else {
+            task = taskRepository.save(task);
+    
+            //Registering user activity: creating tasks
+            Optional<User> user_modifier = userRepository.findById(user_id);
+            auditService.saveAudit(user_modifier.get(), null, "User modified task of id: "+task.getTask_id());
 
-    @Override
-    public Task updateTask(Task task, int user_id) {
-        //Getting user
-        Optional<User> user = userRepository.findByUsername(task.getUser().getUsername());
-        if(!user.isPresent()){
-            //Selected user was not found
         }
-
-        taskRepository.save(task);
-        //Registering user activity: updating tasks
-        Optional<User> user_updater = userRepository.findById(user_id);
-        auditService.saveAudit(user_updater.get(), null, "User updated task of id: "+task.getTask_id());
-
         return task;
     }
 
     @Override
-    public void deleteTask(int task_id, int user_id) {
+    public Map<String, String> deleteTask(Integer task_id, Integer user_id) {
+        Map<String, String> result = new HashMap<>();  
         // Getting task
         Optional<Task> task = taskRepository.findById(task_id);
-        if(!task.isPresent())
+        if(!task.isPresent()){
             //Task not found
+            result.put("status","400");
+            result.put("message","The task you are trying to delete was not found");
+            return result;
+        }
         
         // Deleting task
         taskRepository.delete(task.get());
@@ -97,6 +98,9 @@ public class TaskServiceImpl implements TaskService {
         Optional<User> user_deleter = userRepository.findById(user_id);
         auditService.saveAudit(user_deleter.get(), null, "User deleted task of id: "+task.get().getTask_id());
        
+        result.put("status","200");
+        result.put("message","Task deleted");
+        return result;
     }
     
 }
